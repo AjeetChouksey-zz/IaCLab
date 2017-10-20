@@ -108,6 +108,7 @@
   },
   "resources": [
     {
+      "comments": "Create storage accounts for VMs",
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[concat(variables('storageProperty').namePrefix,copyIndex())]",
       "apiVersion": "2016-01-01",
@@ -126,6 +127,7 @@
       "kind": "Storage"
     },
     {
+      "comments": "Create storage accounts for digonistics",
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('storageProperty').digonisticStorage]",
       "apiVersion": "2016-01-01",
@@ -139,6 +141,7 @@
       "kind": "Storage"
     },
     {
+      "comments": "Create Public IP for VMs",
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[concat(variables('publicIPProperty').publicIPAddressName,copyIndex())]",
@@ -159,6 +162,7 @@
       }
     },
     {
+      "comments": "Create Virtual Network along with Subnet",
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('networkProperty').virtualNetworkName]",
@@ -183,6 +187,7 @@
       }
     },
     {
+      "comments": "Create NIC VMs",
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/networkInterfaces",
       "name":   "[concat(variables('networkProperty').nicName,copyIndex())]",    
@@ -217,6 +222,7 @@
       }
     },
     {
+      "comments": "Create VMs",
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(parameters('vmName'),copyIndex())]",
@@ -274,6 +280,7 @@
       }
     },
     {
+      "comments": "Create SQL Server Instance",
       "name": "[parameters('azureSqlServerName')]",
       "type": "Microsoft.Sql/servers",
       "kind": "v12.0",
@@ -303,6 +310,7 @@
           }
         },
         {
+          "comments": "Create SQL server database",
           "name": "[parameters('azureSqlDbName')]",
           "type": "databases",
           "kind": "v12.0,user",
