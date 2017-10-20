@@ -40,6 +40,42 @@
         "Standard_D8s_v3"
       ],
       "metadata": { "value": "VM Size" }
+    },
+    "sqlAdminLogin": {
+      "type": "string",
+      "defaultValue": "sqladmin",
+      "metadata": { "description": "Azure SQL Admin for Service" }
+    },
+   "sqlAdminPassword": {
+      "type": "securestring",
+      "metadata": { "description": "SQL Admin Password " }
+    },
+    "azureSqlServerName": {
+      "type": "string",
+      "defaultValue": "iaclab2",
+      "metadata": { "description": "Azure SQL Database Server Instance Name for Service" }
+    },
+    "azureSqlDbName": {
+      "type": "string",
+      "defaultValue": "iaclab2db",
+      "metadata": { "description": "Azure SQL Database Name for Service" }
+    },
+    "azureSqlEdition": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Business",
+        "Premium",
+        "Standard",
+        "Web"
+      ],
+      "metadata": { "description": "Azure SQL Database Server Edition for Service" }
+    },
+    "azureSQLCollation": {
+      "type": "string",
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+      "metadata": { "description": "Azure SQL Database Collation" }
     }
   },
   "variables": {
@@ -236,6 +272,55 @@
           }
         }
       }
+    },
+    {
+      "name": "[parameters('azureSqlServerName')]",
+      "type": "Microsoft.Sql/servers",
+      "kind": "v12.0",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "[parameters('azureSqlServerName')]"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('sqlAdminLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdminPassword')]",         
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "name": "AllowAllWindowsAzureIps",
+          "type": "firewallrules",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', parameters('azureSqlServerName'))]"
+          ],
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+          }
+        },
+        {
+          "name": "[parameters('azureSqlDbName')]",
+          "type": "databases",
+          "kind": "v12.0,user",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[parameters('azureSqlServerName')]"
+          ],
+          "tags": {
+            "displayName": "[parameters('azureSqlDbName')]"
+          },
+          "properties": {
+            "collation": "[parameters('azureSQLCollation')]",
+            "edition": "[parameters('azureSqlEdition')]",
+            "maxSizeBytes": "1073741824"
+          }
+        }
+      ]
     }
 ],
 "outputs": {
