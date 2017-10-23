@@ -15,7 +15,7 @@
       "metadata": {
         "value": "number of VM"
       }
-    },
+    },   
     "vmAdminName": {
       "type": "string",
       "defaultValue": "localadmin",
@@ -82,7 +82,9 @@
         "storageProperty":{
           "namePrefix": "[concat(uniquestring(resourceGroup().id),'storage')]",
           "digonisticStorage":"[concat(uniquestring(resourceGroup().id),'dstorage')]",
-          "accountType": "Standard_LRS"
+          "accountType": "Standard_LRS",
+          "dataDiskName":"datadisk",
+          "dataDiskSize":1023
     },
     "vmProperty": {
           "imagePublisher": "MicrosoftWindowsServer",
@@ -223,7 +225,7 @@
     },
     {
       "comments": "Create VMs",
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2017-03-30",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(parameters('vmName'),copyIndex())]",
       "location": "[resourceGroup().location]",
@@ -262,8 +264,20 @@
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
-          }
-        },
+          },
+          "dataDisks": [
+            {
+              "vhd": {
+                "uri": "[concat('http://',variables('storageProperty').namePrefix,copyIndex(),'.blob.core.windows.net/vhds/', variables('storageProperty').dataDiskName,'-1.vhd')]"
+              },
+              "name": "[concat(parameters('vmName'),copyIndex(),'-data-disk1')]",
+              "caching": "None",
+              "createOption": "empty",
+              "diskSizeGB": "[variables('storageProperty').dataDiskSize]",
+              "lun": 0
+            }
+          ]        
+      },
         "networkProfile": {
           "networkInterfaces": [
             {
