@@ -83,7 +83,7 @@ elseif ($osType -match 'Microsoft Windows Server')
 }
 else
 {
-docker --version
+    Write-Host "Error..." -ForegroundColor Red
 }
 
 
