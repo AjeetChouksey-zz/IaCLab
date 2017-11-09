@@ -40,9 +40,9 @@ elseif ($osType -match 'Microsoft Windows Server')
         if((Get-WindowsFeature -name Containers).Installed -eq $false)
            {
                 Write-Host "Enabling Windows Container Feature" -ForegroundColor Green                
-                $null = Install-WindowsFeature containers 
-                Start-Sleep 10
-                Write-Host "Rebooting System" -ForegroundColor Red
+                $null = Install-WindowsFeature containers                
+                Write-Host "Rebooting System......" -ForegroundColor Red
+                Start-Sleep 5
                 Restart-Computer -Force
             }
         # Install Docker module and package
