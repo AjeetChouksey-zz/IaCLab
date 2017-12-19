@@ -30,14 +30,14 @@ if($osType  -match 'Microsoft Windows 10')
 }
 elseif ($osType -match 'Microsoft Windows Server')
 {
-    Write-Host "Checking Docker Service Status" -ForegroundColor Green
-    $svrStatus = (Get-Service -Name 'Docker').Status        
-    if(($svrStatus -eq "Stopped") -and ((Test-Path $env:ProgramFiles\docker\docker.exe) -eq $false))
+    Write-Host "Checking Docker Status" -ForegroundColor Green
+    #$svrStatus = (Get-Service -Name 'Docker').Status        
+    if(!(Test-Path $env:ProgramFiles\docker\docker.exe ))# -eq  $false)
     {
         Write-Host "Getting Started for"$osType
         # Enable Docker Feature. This will require rebooting
         Write-Host "Looking for Windows Container feature"
-        if((Get-WindowsFeature -name Containers).Installed -eq $false)
+        if((Get-WindowsFeature -name Containers).Installed  -eq $false)
            {
                 Write-Host "Enabling Windows Container Feature" -ForegroundColor Green                
                 $null = Install-WindowsFeature containers                
@@ -70,23 +70,19 @@ elseif ($osType -match 'Microsoft Windows Server')
         Start-Service docker
         docker --version
     }
-    elseif(($svrStatus -eq "Stopped") -and ((Test-Path $env:ProgramFiles\docker\docker.exe) -eq $true))
+    #elseif(($svrStatus -eq "Stopped") -and ((Test-Path $env:ProgramFiles\docker\docker.exe) -eq $true))
+    else
     {
-        Write-Host "Docker Service is already registred, but not running. Starting Docker Service" -ForegroundColor Green
+       # Write-Host "Docker Service is already registred, but not running. Starting Docker Service" -ForegroundColor Green
         Start-Service docker
         docker --version
     }       
-    else
-    {
-        docker --version
-    } 
+   # else
+    #{
+      #  docker --version
+    #} 
 }
 else
 {
     Write-Host "Error..." -ForegroundColor Red
 }
-
-
-
-
-
