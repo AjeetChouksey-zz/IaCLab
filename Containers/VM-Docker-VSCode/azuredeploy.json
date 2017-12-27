@@ -52,18 +52,6 @@
       "metadata": {
         "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
       }
-    },
-    "_artifactsLocation": {
-      "type": "string",
-      "metadata": {
-        "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
-      }
-    },
-    "_artifactsLocationSasToken": {
-      "type": "securestring",
-      "metadata": {
-        "description": "Auto-generated token to access _artifactsLocation"
-      }
     }
   },
   "variables": {
@@ -72,11 +60,12 @@
     "addressPrefix": "10.0.0.0/16",
     "subnetName": "Subnet",
     "subnetPrefix": "10.0.0.0/24",
-    "publicIPAddressName": "DevPublicIP",   
+    "publicIPAddressName": "DevPublicIP",
     "virtualNetworkName": "DevVNET",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
     "vscodeScriptFolder": "CustomScripts",
-    "vscodeScriptFileName": "vscode.ps1"
+    "vscodeScriptFileName": "toolsetup.ps1",
+    "fileURI": "https://github.com/AjeetChouksey/IaCLab/tree/master/Containers/VM-Docker-VSCode/CustomScripts"
   },
   "resources": [
     {
@@ -213,7 +202,7 @@
             "autoUpgradeMinorVersion": true,
             "settings": {
               "fileUris": [
-                "[concat(parameters('_artifactsLocation'), '/', variables('vscodeScriptFolder'), '/', variables('vscodeScriptFileName'), parameters('_artifactsLocationSasToken'))]"
+                "[concat(variables('fileURI'), '/', variables('vscodeScriptFolder'), '/', variables('vscodeScriptFileName'))]"
               ],
               "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('vscodeScriptFolder'), '/', variables('vscodeScriptFileName'))]"
             }
