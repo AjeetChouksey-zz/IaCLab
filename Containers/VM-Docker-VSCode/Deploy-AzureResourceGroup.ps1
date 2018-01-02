@@ -9,7 +9,7 @@ Param(
     [string] $TemplateFile = 'azuredeploy.json',
     [string] $TemplateParametersFile = 'azuredeploy.parameters.json',
     [string] $ArtifactStagingDirectory = '.',
-    [string] $DSCSourceFolder = 'DSC',
+    [string] $DSCSourceFolder = '.',
     [switch] $ValidateOnly
 )
 
@@ -63,7 +63,7 @@ if ($UploadArtifacts) {
 
     # Create the storage account if it doesn't already exist
     if ($StorageAccount -eq $null) {
-        $StorageResourceGroupName = 'ARM_Deploy_Staging'
+        $StorageResourceGroupName =  $ResourceGroupName
         New-AzureRmResourceGroup -Location "$ResourceGroupLocation" -Name $StorageResourceGroupName -Force
         $StorageAccount = New-AzureRmStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$ResourceGroupLocation"
     }
