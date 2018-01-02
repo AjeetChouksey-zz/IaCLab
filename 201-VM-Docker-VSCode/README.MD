@@ -1,4 +1,4 @@
-# Deploy a Windows VM and execute a custom PowerShell script.
+# Deploy a Windows VM with Docker Container with VS code, Chrome and git.
 
 
 
