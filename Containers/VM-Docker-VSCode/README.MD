@@ -1,7 +1,9 @@
 
 # Deploy a Windows VM and execute a custom PowerShell script.
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https://github.com/AjeetChouksey/IaCLab/blob/master/Containers/VM-Docker-VSCode/azuredeploy.json" target="_blank">
+
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com/https://github.com/AjeetChouksey/IaCLab/blob/master/Containers/VM-Docker-VSCode/azuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 <a href="https://portal.azure.us/#create/Microsoft.Template/uri/https://github.com/AjeetChouksey/IaCLab/blob/master/Containers/VM-Docker-VSCode/azuredeploy.json" target="_blank">
