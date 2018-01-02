@@ -1,0 +1,360 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "_artifactsLocation": {
+      "type": "string"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring"
+    },
+    "vmName": {
+      "type": "string",
+      "defaultValue": "workVM",
+      "minLength": 4,
+      "maxLength": 10,
+      "metadata": { "value": "VM name" }
+    },
+    "vmCount":{
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "value": "number of VM"
+      }
+    },   
+    "vmAdminName": {
+      "type": "string",
+      "defaultValue": "localadmin",
+      "minLength": 4,
+      "maxLength": 10,
+      "metadata": { "value": "VM local admin name" }
+    },
+    "vmAdminPassword": {
+      "type": "securestring",      
+      "metadata": { "value": "VM local admin password" }
+    },
+    "dnsNamePrefix": {
+      "type": "string",      
+      "metadata": { "value": "DNS Name" }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2s_v3",
+      "allowedValues": [
+        "Standard_D2s_v3",
+        "Standard_D4s_v3",
+        "Standard_D8s_v3"
+      ],
+      "metadata": { "value": "VM Size" }
+    },
+    "sqlAdminLogin": {
+      "type": "string",
+      "defaultValue": "sqladmin",
+      "metadata": { "description": "Azure SQL Admin for Service" }
+    },
+   "sqlAdminPassword": {
+      "type": "securestring",
+      "metadata": { "description": "SQL Admin Password " }
+    },
+    "azureSqlServerName": {
+      "type": "string",
+      "defaultValue": "iaclab2",
+      "metadata": { "description": "Azure SQL Database Server Instance Name for Service" }
+    },
+    "azureSqlDbName": {
+      "type": "string",
+      "defaultValue": "iaclab2db",
+      "metadata": { "description": "Azure SQL Database Name for Service" }
+    },
+    "azureSqlEdition": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Business",
+        "Premium",
+        "Standard",
+        "Web"
+      ],
+      "metadata": { "description": "Azure SQL Database Server Edition for Service" }
+    },
+    "azureSQLCollation": {
+      "type": "string",
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+      "metadata": { "description": "Azure SQL Database Collation" }
+    }
+  },
+  "variables": {
+        "storageProperty":{
+          "namePrefix": "[concat(uniquestring(resourceGroup().id),'storage')]",
+          "digonisticStorage":"[concat(uniquestring(resourceGroup().id),'dstorage')]",
+          "accountType": "Standard_LRS",
+          "dataDiskName":"datadisk",
+          "dataDiskSize":1023
+    },
+    "vmProperty": {
+          "imagePublisher": "MicrosoftWindowsServer",
+          "imageOffer": "WindowsServer",
+          "imageSKU": "2012-R2-Datacenter",
+          "imageVersion": "latest",
+          "osDiskName": "[concat(parameters('vmName'),'_osdisk')]",
+          "vmStorageAccountContainerName": "vhds"
+          },
+    "networkProperty":{
+          "nicName": "[concat(parameters('vmName'),'_nic')]",
+          "addressPrefix": "10.0.0.0/16",
+          "subnetName": "[concat(parameters('vmName'),'_subnet')]",
+          "subnetPrefix": "10.0.0.0/24",
+          "virtualNetworkName": "[concat(parameters('vmName'),'_vnet')]"
+    },              
+    "publicIPProperty":{
+          "publicIPAddressName": "[concat(parameters('vmName'),'_pubip')]",
+          "publicIPAddressType": "Dynamic" 
+    },
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('networkProperty').virtualNetworkName)]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('networkProperty').subnetName)]"  
+  },
+  "resources": [
+    {
+      "comments": "Create storage accounts for VMs",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[concat(variables('storageProperty').namePrefix,copyIndex())]",
+      "apiVersion": "2016-01-01",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "StorageAccountLoop",
+        "count": "[parameters('vmCount')]",
+        "mode":"Parallel"
+    },
+      "tags": {
+        "displayName": "[concat(variables('storageProperty').namePrefix,copyIndex())]"
+      },
+      "sku": {
+        "name": "[variables('storageProperty').accountType]"
+      },
+      "kind": "Storage"
+    },
+    {
+      "comments": "Create storage accounts for digonistics",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageProperty').digonisticStorage]",
+      "apiVersion": "2016-01-01",
+      "location": "[resourceGroup().location]",    
+      "tags": {
+        "displayName": "[variables('storageProperty').digonisticStorage]"
+      },
+      "sku": {
+        "name": "[variables('storageProperty').accountType]"
+      },
+      "kind": "Storage"
+    },
+    {
+      "comments": "Create Public IP for VMs",
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('publicIPProperty').publicIPAddressName,copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "PublicIPLoop",
+        "count": "[parameters('vmCount')]",
+        "mode":"Parallel"
+    },
+      "tags": {
+        "displayName":  "[concat(variables('publicIPProperty').publicIPAddressName,copyIndex())]"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "[variables('publicIPProperty').publicIPAddressType]",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(parameters('dnsNamePrefix'),copyIndex())]"
+        }
+      }
+    },
+    {
+      "comments": "Create Virtual Network along with Subnet",
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('networkProperty').virtualNetworkName]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "VirtualNetwork"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('networkProperty').addressPrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('networkProperty').subnetName]",
+            "properties": {
+              "addressPrefix": "[variables('networkProperty').subnetPrefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "comments": "Create NIC VMs",
+      "apiVersion": "2016-03-30",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name":   "[concat(variables('networkProperty').nicName,copyIndex())]",    
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "NICLoop",
+        "count": "[parameters('vmCount')]",
+        "mode":"Parallel"
+    },
+      "tags": {
+        "displayName":   "[concat(variables('networkProperty').nicName,copyIndex())]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('publicIPProperty').publicIPAddressName,copyIndex()))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/', variables('networkProperty').virtualNetworkName)]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('publicIPProperty').publicIPAddressName,copyIndex()))]"
+              },
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "comments": "Create VMs",
+      "apiVersion": "2016-04-30-preview",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('vmName'),copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "VMLoop",
+        "count":"[parameters('vmCount')]",
+        "mode": "Parallel"        
+      },
+      "tags": {
+        "displayName": "[concat(parameters('vmName'),copyIndex())]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/', concat(variables('storageProperty').namePrefix,copyIndex()))]",
+        "[resourceId('Microsoft.Network/networkInterfaces/',  concat(variables('networkProperty').nicName,copyIndex()))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('vmName'),copyIndex())]",
+          "adminUsername": "[parameters('vmAdminName')]",
+          "adminPassword": "[parameters('vmAdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('vmProperty').imagePublisher]",
+            "offer":  "[variables('vmProperty').imageOffer]",
+            "sku": "[variables('vmProperty').imageSKU]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osDisk",
+            "vhd": {
+              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', concat(variables('storageProperty').namePrefix,copyIndex())), '2016-01-01').primaryEndpoints.blob, variables('vmProperty').vmStorageAccountContainerName, '/', concat(variables('vmProperty').osDiskName,copyIndex()), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "vhd": {
+                "uri": "[concat('http://',variables('storageProperty').namePrefix,copyIndex(),'.blob.core.windows.net/vhds/', variables('storageProperty').dataDiskName,'-1.vhd')]"
+              },
+              "name": "[concat(parameters('vmName'),copyIndex(),'-data-disk1')]",
+              "caching": "None",
+              "createOption": "empty",
+              "diskSizeGB": "[variables('storageProperty').dataDiskSize]",
+              "lun": 0
+            }
+          ]        
+      },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('networkProperty').nicName,copyIndex()))]"
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageProperty').digonisticStorage), '2016-01-01').primaryEndpoints.blob]"
+          }
+        }
+      }
+    },
+    {
+      "comments": "Create SQL Server Instance",
+      "name": "[parameters('azureSqlServerName')]",
+      "type": "Microsoft.Sql/servers",
+      "kind": "v12.0",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "[parameters('azureSqlServerName')]"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('sqlAdminLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdminPassword')]",         
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "name": "AllowAllWindowsAzureIps",
+          "type": "firewallrules",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', parameters('azureSqlServerName'))]"
+          ],
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+          }
+        },
+        {
+          "comments": "Create SQL server database",
+          "name": "[parameters('azureSqlDbName')]",
+          "type": "databases",
+          "kind": "v12.0,user",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[parameters('azureSqlServerName')]"
+          ],
+          "tags": {
+            "displayName": "[parameters('azureSqlDbName')]"
+          },
+          "properties": {
+            "collation": "[parameters('azureSQLCollation')]",
+            "edition": "[parameters('azureSqlEdition')]",
+            "maxSizeBytes": "1073741824"
+          }
+        }
+      ]
+    }
+],
+"outputs": {
+  "dnsName":{
+    "type": "string",
+    "value": "variables('publicIPProperty').dnsName"
+  }
+}
+}

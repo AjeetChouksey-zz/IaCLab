@@ -1,0 +1,151 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "_artifactsLocation": {
+      "type": "string"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring"
+    },
+    "vmName": {
+      "type": "string",
+      "defaultValue": "workVM",
+      "minLength": 4,
+      "maxLength": 10,
+      "metadata": { "value": "VM name" }
+    },
+    "vmCount":{
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "value": "number of VM"
+      }
+    },   
+    "vmAdminName": {
+      "type": "string",
+      "defaultValue": "localadmin",
+      "minLength": 4,
+      "maxLength": 10,
+      "metadata": { "value": "VM local admin name" }
+    },
+    "vmAdminPassword": {
+      "type": "securestring",      
+      "metadata": { "value": "VM local admin password" }
+    },
+    "dnsNamePrefix": {
+      "type": "string",      
+      "metadata": { "value": "DNS Name" }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2s_v3",
+      "allowedValues": [
+        "Standard_D2s_v3",
+        "Standard_D4s_v3",
+        "Standard_D8s_v3"
+      ],
+      "metadata": { "value": "VM Size" }
+    },
+    "sqlAdminLogin": {
+      "type": "string",
+      "defaultValue": "sqladmin",
+      "metadata": { "description": "Azure SQL Admin for Service" }
+    },
+   "sqlAdminPassword": {
+      "type": "securestring",
+      "metadata": { "description": "SQL Admin Password " }
+    },
+    "azureSqlServerName": {
+      "type": "string",
+      "defaultValue": "iaclab2",
+      "metadata": { "description": "Azure SQL Database Server Instance Name for Service" }
+    },
+    "azureSqlDbName": {
+      "type": "string",
+      "defaultValue": "iaclab2db",
+      "metadata": { "description": "Azure SQL Database Name for Service" }
+    },
+    "azureSqlEdition": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Business",
+        "Premium",
+        "Standard",
+        "Web"
+      ],
+      "metadata": { "description": "Azure SQL Database Server Edition for Service" }
+    },
+    "azureSQLCollation": {
+      "type": "string",
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+      "metadata": { "description": "Azure SQL Database Collation" }
+    }
+  },
+  "variables": {
+        "storageProperty":{
+          "namePrefix": "[concat(uniquestring(resourceGroup().id),'storage')]",
+          "digonisticStorage":"[concat(uniquestring(resourceGroup().id),'dstorage')]",
+          "accountType": "Standard_LRS",
+          "dataDiskName":"datadisk",
+          "dataDiskSize":1023
+    },
+    "vmProperty": {
+          "imagePublisher": "MicrosoftWindowsServer",
+          "imageOffer": "WindowsServer",
+          "imageSKU": "2012-R2-Datacenter",
+          "imageVersion": "latest",
+          "osDiskName": "[concat(parameters('vmName'),'_osdisk')]",
+          "vmStorageAccountContainerName": "vhds"
+          },
+    "networkProperty":{
+          "nicName": "[concat(parameters('vmName'),'_nic')]",
+          "addressPrefix": "10.0.0.0/16",
+          "subnetName": "[concat(parameters('vmName'),'_subnet')]",
+          "subnetPrefix": "10.0.0.0/24",
+          "virtualNetworkName": "[concat(parameters('vmName'),'_vnet')]"
+    },              
+    "publicIPProperty":{
+          "publicIPAddressName": "[concat(parameters('vmName'),'_pubip')]",
+          "publicIPAddressType": "Dynamic" 
+    },
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('networkProperty').virtualNetworkName)]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('networkProperty').subnetName)]"  
+  },
+  "resources": [
+   {
+     "apiVersion": "2015-01-01",
+     "type":  "Microsoft.Resources/deployments",
+     "dependsOn": [],
+     "name": "Test",
+     "properties": {
+       "mode":"Incremental",
+       "templateLink":{
+         "contentVersion": "1.0.0.0",
+         "uri": "[concat(parameters('_artifactsLocation'),'/azureDeploy.1.json',parameters('_artifactsLocationSasToken'))]"
+       },
+       "parameters":{
+        "_artifactsLocation":{"value":"[parameters('_artifactsLocation')]"},
+       "_artifactsLocationSasToken": {"value":"[parameters('_artifactsLocationSasToken')]"},        
+        "vmName": {"value":"[parameters('vmName')]"},
+        "vmCount": {"value":"[parameters('vmCount')]"},          
+        "vmAdminName": {"value":"[parameters('vmAdminName')]"},               
+        "vmAdminPassword":{"value":"[parameters('vmAdminPassword')]"},            
+        "dnsNamePrefix":{"value":"[parameters('dnsNamePrefix')]"},      
+        "vmSize": {"value":"[parameters('vmSize')]"},   
+        "sqlAdminLogin":  {"value":"[parameters('sqlAdminLogin')]"},   
+       "sqlAdminPassword": {"value":"[parameters('sqlAdminPassword')]"},   
+        "azureSqlServerName": {"value":"[parameters('azureSqlServerName')]"},  
+        "azureSqlDbName": {"value":"[parameters('azureSqlDbName')]"},  
+        "azureSqlEdition": {"value":"[parameters('azureSqlEdition')]"},  
+        "azureSQLCollation":{"value":"[parameters('azureSQLCollation')]"}
+       }
+     }
+   }
+],
+"outputs": {
+  
+}
+}
