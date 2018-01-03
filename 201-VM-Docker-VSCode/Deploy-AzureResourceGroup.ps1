@@ -2,14 +2,14 @@
 
 Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
-    [string] $ResourceGroupName = 'AzureResourceGroup1',
+    [string] $ResourceGroupName = 'Docker',
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
     [string] $TemplateFile = 'azuredeploy.json',
     [string] $TemplateParametersFile = 'azuredeploy.parameters.json',
     [string] $ArtifactStagingDirectory = '.',
-    [string] $DSCSourceFolder = '.',
+    [string] $DSCSourceFolder = 'DSC',
     [switch] $ValidateOnly
 )
 
@@ -63,7 +63,7 @@ if ($UploadArtifacts) {
 
     # Create the storage account if it doesn't already exist
     if ($StorageAccount -eq $null) {
-        $StorageResourceGroupName =  $ResourceGroupName
+        $StorageResourceGroupName = 'ARM_Deploy_Staging'
         New-AzureRmResourceGroup -Location "$ResourceGroupLocation" -Name $StorageResourceGroupName -Force
         $StorageAccount = New-AzureRmStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$ResourceGroupLocation"
     }
