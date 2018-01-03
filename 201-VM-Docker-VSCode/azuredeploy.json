@@ -190,7 +190,7 @@
           "fileUris": [
             "[concat(parameters('_artifactsLocation'), '/', variables('toolextensionScriptFolder'), '/', variables('toolextensionScriptFileName'), parameters('_artifactsLocationSasToken'))]"
           ],
-          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', variables('toolextensionScriptFolder'), '/', variables('toolextensionScriptFileName'))]"
+          "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -File ', '/',variables('toolextensionScriptFolder'), '/', variables('toolextensionScriptFileName'))]"
         }
       }
     }
