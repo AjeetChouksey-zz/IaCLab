@@ -286,3 +286,6 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+/201-Container-HOL1/201-Container-HOL1/Deployment.targets
+/201-Container-HOL1/201-Container-HOL1/201-Container-HOL1.deployproj
+/201-Container-HOL1/201-Container-HOL1.sln
