@@ -1,4 +1,4 @@
-# Deploy a Windows VM with Docker Container with VS code, Chrome and git.
+# Deploy a Windows VM with Docker Container, VS code, Chrome and git.
 
 
 
