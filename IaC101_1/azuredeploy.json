@@ -18,9 +18,7 @@
       },
       "vmAdminPassword": {
         "type": "securestring",
-        "minLength": 4,
-        "maxLength": 20,
-        "metadata": { "value": "VM local admin password" }
+                "metadata": { "value": "VM local admin password" }
       },
       "dnsNamePrefix": {
         "type": "string",      
